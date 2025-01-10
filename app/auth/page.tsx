@@ -129,3 +129,170 @@ export default function AuthPage() {
     </div>
   );
 }
+
+
+
+// "use client";
+
+// import { useState } from "react";
+// import { useRouter } from "next/navigation";
+// import { Button } from "@/components/ui/button";
+// import { Input } from "@/components/ui/input";
+// import { Label } from "@/components/ui/label";
+// import { Card } from "@/components/ui/card";
+// import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+// import { useToast } from "@/hooks/use-toast";
+// import { supabase } from "@/lib/supabase";
+// import { Lock, Mail, UserPlus, LogIn } from "lucide-react";
+
+// export default function AuthPage() {
+//   const [email, setEmail] = useState("");
+//   const [password, setPassword] = useState("");
+//   const [loading, setLoading] = useState(false);
+//   const router = useRouter();
+//   const { toast } = useToast();
+
+//   const handleAuth = async (type: "login" | "signup") => {
+//     try {
+//       setLoading(true);
+      
+//       const { data, error } = type === "login" 
+//         ? await supabase.auth.signInWithPassword({ email, password })
+//         : await supabase.auth.signUp({ email, password });
+
+//       if (error) throw error;
+
+//       if (type === "signup") {
+//         toast({
+//           title: "Account created successfully!",
+//           description: "Please check your email to verify your account.",
+//         });
+//       } else {
+//         toast({
+//           title: "Logged in successfully!",
+//           description: "Redirecting to dashboard...",
+//         });
+//         router.push("/dashboard");
+//       }
+//     } catch (error: any) {
+//       toast({
+//         variant: "destructive",
+//         title: "Error",
+//         description: error.message,
+//       });
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   return (
+//     <div className="min-h-screen bg-gradient-to-b from-background to-muted flex items-center justify-center p-4">
+//       <Card className="w-full max-w-md p-6">
+//         <Tabs defaultValue="login" className="w-full">
+//           <TabsList className="grid w-full grid-cols-2 mb-6">
+//             <TabsTrigger value="login">Login</TabsTrigger>
+//             <TabsTrigger value="signup">Sign Up</TabsTrigger>
+//           </TabsList>
+          
+//           <TabsContent value="login">
+//             <div className="space-y-4">
+//               <div className="space-y-2">
+//                 <Label htmlFor="email">Email</Label>
+//                 <div className="relative">
+//                   <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+//                   <Input
+//                     id="email"
+//                     type="email"
+//                     placeholder="Enter your email"
+//                     className="pl-9"
+//                     value={email}
+//                     onChange={(e) => setEmail(e.target.value)}
+//                   />
+//                 </div>
+//               </div>
+              
+//               <div className="space-y-2">
+//                 <Label htmlFor="password">Password</Label>
+//                 <div className="relative">
+//                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+//                   <Input
+//                     id="password"
+//                     type="password"
+//                     placeholder="Enter your password"
+//                     className="pl-9"
+//                     value={password}
+//                     onChange={(e) => setPassword(e.target.value)}
+//                   />
+//                 </div>
+//               </div>
+
+//               <Button 
+//                 className="w-full"
+//                 onClick={() => handleAuth("login")}
+//                 disabled={loading}
+//               >
+//                 {loading ? (
+//                   "Loading..."
+//                 ) : (
+//                   <>
+//                     <LogIn className="mr-2 h-4 w-4" />
+//                     Login
+//                   </>
+//                 )}
+//               </Button>
+//             </div>
+//           </TabsContent>
+          
+//           <TabsContent value="signup">
+//             <div className="space-y-4">
+//               <div className="space-y-2">
+//                 <Label htmlFor="signup-email">Email</Label>
+//                 <div className="relative">
+//                   <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+//                   <Input
+//                     id="signup-email"
+//                     type="email"
+//                     placeholder="Enter your email"
+//                     className="pl-9"
+//                     value={email}
+//                     onChange={(e) => setEmail(e.target.value)}
+//                   />
+//                 </div>
+//               </div>
+              
+//               <div className="space-y-2">
+//                 <Label htmlFor="signup-password">Password</Label>
+//                 <div className="relative">
+//                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+//                   <Input
+//                     id="signup-password"
+//                     type="password"
+//                     placeholder="Create a password"
+//                     className="pl-9"
+//                     value={password}
+//                     onChange={(e) => setPassword(e.target.value)}
+//                   />
+//                 </div>
+//               </div>
+
+//               <Button 
+//                 className="w-full"
+//                 onClick={() => handleAuth("signup")}
+//                 disabled={loading}
+//               >
+//                 {loading ? (
+//                   "Loading..."
+//                 ) : (
+//                   <>
+//                     <UserPlus className="mr-2 h-4 w-4" />
+//                     Sign Up
+//                   </>
+//                 )}
+//               </Button>
+//             </div>
+//           </TabsContent>
+//         </Tabs>
+//       </Card>
+//     </div>
+//   );
+// }
