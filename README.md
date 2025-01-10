@@ -52,11 +52,7 @@ This is a full-stack web application for managing and visualizing geospatial dat
    ```
 
 2. Install dependencies for both the frontend and backend:
-   ```bash
-   # Backend
-   cd backend
-   npm install
-
+  
    # Frontend
    cd ../frontend
    npm install
