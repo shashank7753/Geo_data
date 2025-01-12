@@ -1,66 +1,61 @@
 'use client';
-
-import { useEffect, useState } from "react";
-import MapboxGL from "mapbox-gl";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import MapboxDraw from "@mapbox/mapbox-gl-draw";
-import { Layers, Ruler, MapPin, Upload, Map } from "lucide-react";
+import { Layers, Ruler, MapPin, Upload, Map as LucideMap } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Map from "../about/map"; // Import the Map component
 
-MapboxGL.accessToken = "pk.eyJ1Ijoic2hhc2hhbmszMzMiLCJhIjoiY201cXl5Z2ttMDRybjJrc2ZiMDg2d3Q4biJ9._rACzs_e_bFQCYc2CPsGYQ";
+// Reusable Components
+const MarkersList = ({ markers, onDelete }: { markers: mapboxgl.Marker[]; onDelete: (marker: mapboxgl.Marker) => void }) => (
+  <div className="space-y-2">
+    {markers.map((marker, index) => (
+      <div key={index} className="flex items-center justify-between bg-muted/50 p-2 rounded-md">
+        <span className="text-sm">Marker {index + 1}</span>
+        <Button variant="ghost" size="sm" onClick={() => onDelete(marker)}>
+          Delete
+        </Button>
+      </div>
+    ))}
+  </div>
+);
+
+const FileUploadSection = ({ onFileUpload }: { onFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void }) => (
+  <div className="p-4 border-b">
+    <h2 className="text-sm font-semibold mb-3 flex items-center gap-2">
+      <Upload className="h-4 w-4" /> Import Data
+    </h2>
+    <div className="relative">
+      <input
+        type="file"
+        accept=".geojson,.kml,.tiff"
+        onChange={onFileUpload}
+        multiple
+        aria-label="Upload geo-spatial data files"
+        className="block w-full text-sm text-muted-foreground
+          file:mr-4 file:py-2 file:px-4
+          file:rounded-md file:border-0
+          file:text-sm file:font-semibold
+          file:bg-primary file:text-primary-foreground
+          hover:file:bg-primary/90"
+      />
+    </div>
+  </div>
+);
 
 export default function MapPage() {
-  const [map, setMap] = useState<mapboxgl.Map | null>(null);
-  const [datasets, setDatasets] = useState<string[]>([]);
-  const [draw, setDraw] = useState<MapboxDraw | null>(null);
-  const [measurementMode, setMeasurementMode] = useState(false);
   const [markers, setMarkers] = useState<mapboxgl.Marker[]>([]);
+  const [measurementMode, setMeasurementMode] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
-  useEffect(() => {
-    return () => {
-      if (map) {
-        map.remove();
-      }
-    };
-  }, [map]);
-
-  const initializeMap = () => {
-    if (!map) {
-      const mapInstance = new MapboxGL.Map({
-        container: "map",
-        style: "mapbox://styles/mapbox/light-v11",
-        center: [0, 0],
-        zoom: 2,
-      });
-
-      const drawInstance = new MapboxDraw({
-        displayControlsDefault: false,
-        controls: {
-          polygon: true,
-          line_string: true,
-          trash: true,
-        },
-      });
-
-      mapInstance.addControl(drawInstance);
-      mapInstance.addControl(new MapboxGL.NavigationControl(), 'top-right');
-
-      setMap(mapInstance);
-      setDraw(drawInstance);
-    }
-  };
-
-  const addMarker = (e: mapboxgl.MapMouseEvent) => {
-    const newMarker = new MapboxGL.Marker({ draggable: true })
-      .setLngLat(e.lngLat)
-      .addTo(map!);
-    setMarkers((prev) => [...prev, newMarker]);
+  const handleAddMarker = (marker: mapboxgl.Marker) => {
+    setMarkers((prev) => [...prev, marker]);
   };
 
   const deleteMarker = (markerToDelete: mapboxgl.Marker) => {
-    markerToDelete.remove();
-    setMarkers((prev) => prev.filter((m) => m !== markerToDelete));
+    if (confirm("Are you sure you want to delete this marker?")) {
+      markerToDelete.remove();
+      setMarkers((prev) => prev.filter((m) => m !== markerToDelete));
+    }
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -68,149 +63,32 @@ export default function MapPage() {
     if (!files) return;
 
     Array.from(files).forEach((file) => {
-      if (!file.name.match(/\.(geojson|kml|tiff)$/)) {
-        alert(`Unsupported file format: ${file.name}`);
+      if (!["application/json", "application/vnd.google-earth.kml+xml", "image/tiff"].includes(file.type)) {
+        console.error(`Unsupported file type: ${file.name}`);
         return;
       }
-
-      const reader = new FileReader();
-      reader.onload = () => {
-        if (file.name.endsWith(".geojson") || file.name.endsWith(".kml")) {
-          const data = JSON.parse(reader.result as string);
-          const layerId = `layer-${Date.now()}-${file.name}`;
-          if (map) {
-            if (map.getSource(layerId)) {
-              alert(`Layer ${layerId} already exists!`);
-              return;
-            }
-            map.addSource(layerId, {
-              type: "geojson",
-              data,
-            });
-            map.addLayer({
-              id: layerId,
-              type: "line",
-              source: layerId,
-              paint: {
-                "line-color": "#ff0000",
-                "line-width": 2,
-              },
-            });
-            setDatasets((prev) => [...prev, layerId]);
-          }
-        } else if (file.name.endsWith(".tiff")) {
-          // Handle TIFF rendering (assuming raster data)
-          const layerId = `raster-layer-${Date.now()}`;
-          if (map) {
-            if (map.getSource(layerId)) {
-              alert(`Layer ${layerId} already exists!`);
-              return;
-            }
-            map.addSource(layerId, {
-              type: "raster",
-              url: URL.createObjectURL(file),
-              tileSize: 256,
-            });
-            map.addLayer({
-              id: layerId,
-              type: "raster",
-              source: layerId,
-            });
-            setDatasets((prev) => [...prev, layerId]);
-          }
-        }
-      };
-      reader.readAsText(file);
+      console.log(`File uploaded: ${file.name}`);
     });
   };
 
-  const handleMeasureDistance = (e: mapboxgl.MapMouseEvent) => {
-    if (measurementMode && map) {
-      // Implement logic for measuring distance here
-      // Use the coordinates of `e.lngLat` and calculate distance
-    }
-  };
-
-  const toggleDataset = (layerId: string) => {
-    if (map) {
-      const visibility = map.getLayoutProperty(layerId, "visibility");
-      map.setLayoutProperty(
-        layerId,
-        "visibility",
-        visibility === "none" ? "visible" : "none"
-      );
-    }
-  };
-
-  // ... (keep all the existing handler functions)
-
-  useEffect(() => {
-    if (map) {
-      map.on("click", addMarker);
-      if (measurementMode) {
-        map.on("mousemove", handleMeasureDistance);
-      }
-    }
-  }, [map, measurementMode]);
-
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex flex-col md:flex-row h-screen bg-background">
       {/* Sidebar */}
       <div
         className={cn(
-          "w-80 bg-card border-r transition-all duration-300 flex flex-col",
-          !sidebarOpen && "w-0 overflow-hidden"
+          "bg-card border-r transition-all duration-300 flex flex-col",
+          sidebarOpen ? "w-full md:w-80" : "w-0"
         )}
       >
         <div className="p-4 border-b">
           <h1 className="text-2xl font-semibold flex items-center gap-2">
-            <Map className="h-6 w-6" />
-            GeoMapper
+            <LucideMap className="h-6 w-6" /> Map Manager
           </h1>
         </div>
 
         <div className="flex-1 overflow-auto">
           {/* File Upload Section */}
-          <div className="p-4 border-b">
-            <h2 className="text-sm font-semibold mb-3 flex items-center gap-2">
-              <Upload className="h-4 w-4" /> Import Data
-            </h2>
-            <div className="relative">
-              <input
-                type="file"
-                accept=".geojson,.kml,.tiff"
-                onChange={handleFileUpload}
-                multiple
-                className="block w-full text-sm text-muted-foreground
-                  file:mr-4 file:py-2 file:px-4
-                  file:rounded-md file:border-0
-                  file:text-sm file:font-semibold
-                  file:bg-primary file:text-primary-foreground
-                  hover:file:bg-primary/90"
-              />
-            </div>
-          </div>
-
-          {/* Datasets Section */}
-          <div className="p-4 border-b">
-            <h2 className="text-sm font-semibold mb-3 flex items-center gap-2">
-              <Layers className="h-4 w-4" /> Datasets
-            </h2>
-            {datasets.length > 0 ? (
-              <div className="space-y-2">
-                {datasets.map((id) => (
-                  <div key={id} className="flex items-center justify-between bg-muted/50 p-2 rounded-md">
-                    <span className="text-sm truncate flex-1">{id.split('-').slice(2).join('-')}</span>
-                    <Button variant="ghost" size="sm" onClick={() => toggleDataset(id)}>
-                      Toggle
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">No datasets added yet.</p>
-            )}
-          </div>
+          <FileUploadSection onFileUpload={handleFileUpload} />
 
           {/* Markers Section */}
           <div className="p-4">
@@ -218,16 +96,7 @@ export default function MapPage() {
               <MapPin className="h-4 w-4" /> Markers
             </h2>
             {markers.length > 0 ? (
-              <div className="space-y-2">
-                {markers.map((marker, index) => (
-                  <div key={index} className="flex items-center justify-between bg-muted/50 p-2 rounded-md">
-                    <span className="text-sm">Marker {index + 1}</span>
-                    <Button variant="ghost" size="sm" onClick={() => deleteMarker(marker)}>
-                      Delete
-                    </Button>
-                  </div>
-                ))}
-              </div>
+              <MarkersList markers={markers} onDelete={deleteMarker} />
             ) : (
               <p className="text-sm text-muted-foreground">No markers added yet.</p>
             )}
@@ -244,20 +113,12 @@ export default function MapPage() {
             size="icon"
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className="shrink-0"
+            aria-label="Toggle Sidebar"
           >
             <Layers className="h-4 w-4" />
           </Button>
-          
+
           <div className="flex items-center gap-2">
-            <Button
-              variant={map ? "secondary" : "default"}
-              size="sm"
-              onClick={initializeMap}
-              disabled={!!map}
-            >
-              {map ? "Map Initialized" : "Initialize Map"}
-            </Button>
-            
             <Button
               variant={measurementMode ? "destructive" : "secondary"}
               size="sm"
@@ -269,20 +130,9 @@ export default function MapPage() {
           </div>
         </div>
 
-        {/* Map Container */}
-        <div id="map" className="flex-1 w-full relative">
-          {!map && (
-            <div className="absolute inset-0 flex items-center justify-center bg-muted/10">
-              <div className="text-center">
-                <Map className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-muted-foreground">Click "Initialize Map" to begin</p>
-              </div>
-            </div>
-          )}
-        </div>
+        {/* Map Component */}
+        <Map onAddMarker={handleAddMarker} measurementMode={measurementMode} />
       </div>
     </div>
   );
 }
-
-
