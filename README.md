@@ -48,13 +48,11 @@ This is a full-stack web application for managing and visualizing geospatial dat
 1. Clone the repository:
    ```bash
    git clone https://github.com/shashank7753/Geo_data.git
-   cd your-repo-name
    ```
 
 2. Install dependencies for both the frontend and backend:
   
    # Frontend
-   cd ../frontend
    npm install
    ```
 
