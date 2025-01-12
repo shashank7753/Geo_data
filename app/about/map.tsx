@@ -20,7 +20,7 @@ export default function Map({ onAddMarker, measurementMode }: MapProps) {
     const initializeMap = () => {
       const mapInstance = new MapboxGL.Map({
         container: "map",
-        style: "mapbox://styles/mapbox/streets-v12", // Updated to a colorful style
+        style: "mapbox://styles/mapbox/streets-v12", 
         center: [0, 0],
         zoom: 2,
       });
