@@ -4,7 +4,11 @@
 This is a full-stack web application for managing and visualizing geospatial data. The application provides tools for users to upload and visualize GeoJSON/KML and TIFF files on a map using Mapbox. It also includes features such as shape drawing, distance measurement, and point marker management. The application is built with a **Vue.js** or **Next.js** frontend and a backend in a language of your choice.
 
 ---
+## Deployed On Netlify -
 
+```bash
+  https://geo-data-map.netlify.app
+   ```
 ## Features
 ### User Management and Data Upload
 - User account creation and authentication.
@@ -53,6 +57,7 @@ This is a full-stack web application for managing and visualizing geospatial dat
 2. Install dependencies for both the frontend and backend:
   
    # Frontend
+   ```
    npm install
    ```
 
@@ -64,10 +69,9 @@ This is a full-stack web application for managing and visualizing geospatial dat
    
 
    # Frontend
-   cd ../frontend
-   npm run dev
    ```
-
+    npm run dev
+   ```
 5. Access the application in your browser:
    ```
    http://localhost:3000
